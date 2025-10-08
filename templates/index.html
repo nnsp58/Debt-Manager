@@ -1,1 +1,75 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Debt-Free Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <h1 class="h4 mb-3">Debt-Free Manager</h1>
 
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5>Monthly Income</h5>
+        <div class="row g-2">
+          <div class="col-8"><input id="income_name" class="form-control" placeholder="Name (e.g., Salary)"></div>
+          <div class="col-4"><input id="income_amount" type="number" class="form-control" placeholder="Amount"></div>
+        </div>
+        <div class="mt-2">
+          <button class="btn btn-primary btn-sm" onclick="addIncome()">Add Income</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5>Fixed Expense</h5>
+        <div class="row g-2">
+          <div class="col-8"><input id="expense_name" class="form-control" placeholder="Name (e.g., Rent)"></div>
+          <div class="col-4"><input id="expense_amount" type="number" class="form-control" placeholder="Amount"></div>
+        </div>
+        <div class="mt-2">
+          <button class="btn btn-warning btn-sm text-white" onclick="addExpense()">Add Expense</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5>Add Debt / Loan</h5>
+        <div class="row g-2">
+          <div class="col-12"><input id="debt_name" class="form-control" placeholder="Debt Name (Credit Card, Loan)"></div>
+          <div class="col-4"><input id="debt_balance" type="number" class="form-control" placeholder="Balance"></div>
+          <div class="col-4"><input id="debt_apr" type="number" class="form-control" placeholder="APR (%)"></div>
+          <div class="col-4"><input id="debt_min" type="number" class="form-control" placeholder="Min Payment"></div>
+        </div>
+        <div class="mt-2">
+          <button class="btn btn-success btn-sm" onclick="addDebt()">Add Debt</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mb-3">
+      <select id="method" class="form-select w-auto">
+        <option value="snowball">Snowball (smallest balance)</option>
+        <option value="avalanche">Avalanche (highest APR)</option>
+      </select>
+      <input id="extra_payment" type="number" class="form-control w-auto" placeholder="Extra/month" />
+      <button class="btn btn-primary" onclick="generatePlan()">Create Plan</button>
+      <button class="btn btn-outline-secondary" onclick="refreshStatus()">Refresh</button>
+    </div>
+
+    <div id="status" class="mb-3"></div>
+
+    <div id="debts_list" class="mb-3"></div>
+
+    <div id="plan_output"></div>
+
+    <div class="mt-4 small text-muted">Note: Demo app — data stored in server memory. For persistent storage use paid DB or Deta/Firebase.</div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
