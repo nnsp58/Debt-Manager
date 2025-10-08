@@ -1,4 +1,3 @@
-// static/app.js
 async function api(path, method="GET", body) {
   const opts = { method, headers: {} };
   if (body) {
@@ -13,7 +12,6 @@ async function addIncome() {
   const name = document.getElementById("income_name").value || "income";
   const amount = parseFloat(document.getElementById("income_amount").value) || 0;
   await api("/income", "POST", {name, amount});
-  alert("Income added");
   refreshStatus();
 }
 
@@ -21,7 +19,6 @@ async function addExpense() {
   const name = document.getElementById("expense_name").value || "expense";
   const amount = parseFloat(document.getElementById("expense_amount").value) || 0;
   await api("/expense", "POST", {name, amount});
-  alert("Expense added");
   refreshStatus();
 }
 
@@ -32,8 +29,18 @@ async function addDebt() {
   const min_payment = parseFloat(document.getElementById("debt_min").value) || 0;
   if (!name || balance <= 0) { alert("Enter valid debt name and balance"); return; }
   await api("/debt", "POST", {name, balance, apr, min_payment});
-  alert("Debt added");
   refreshStatus();
+}
+
+async function deleteDebt(id) {
+  if (!confirm("क्या आप यह debt डिलीट करना चाहते हैं?")) return;
+  const res = await api(`/debt/${id}`, "DELETE");
+  if (res.deleted) {
+    alert("Debt हटाया गया ✅");
+    refreshStatus();
+  } else {
+    alert(res.message || "Error deleting");
+  }
 }
 
 async function refreshStatus() {
@@ -48,12 +55,21 @@ async function refreshStatus() {
   `;
   const debts = await api("/debts");
   const list = debts.debts.map(d => 
-    `<tr><td>${d.name}</td><td>₹ ${d.balance}</td><td>${d.apr}%</td><td>₹ ${d.min_payment}</td></tr>`
+    `<tr>
+      <td>${d.name}</td>
+      <td>₹ ${d.balance}</td>
+      <td>${d.apr}%</td>
+      <td>₹ ${d.min_payment}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteDebt(${d.id})">🗑</button></td>
+    </tr>`
   ).join("");
   document.getElementById("debts_list").innerHTML = `
     <div class="card"><div class="card-body">
       <h6>Debts</h6>
-      <table class="table table-sm"><thead><tr><th>Name</th><th>Balance</th><th>APR</th><th>Min</th></tr></thead><tbody>${list}</tbody></table>
+      <table class="table table-sm">
+        <thead><tr><th>Name</th><th>Balance</th><th>APR</th><th>Min</th><th>Action</th></tr></thead>
+        <tbody>${list}</tbody>
+      </table>
     </div></div>
   `;
 }
@@ -63,11 +79,11 @@ async function generatePlan() {
   const extra = parseFloat(document.getElementById("extra_payment").value) || 0;
   const res = await api("/plan", "POST", {method, extra_payment: extra, months_limit:120});
   if (res.error) { alert(res.error); return; }
-  // display simple summary
   const months = res.months;
-  let html = `<div class="card"><div class="card-body"><h5>Plan (months: ${res.total_months})</h5>`;
-  html += `<div class="mb-2"><strong>Total paid:</strong> ₹ ${res.total_paid}</div>`;
-  html += `<div style="max-height:350px; overflow:auto;"><table class="table table-sm"><thead><tr><th>M</th><th>Paid</th><th>Remaining</th></tr></thead><tbody>`;
+  let html = `<div class="card"><div class="card-body"><h5>Plan (${res.total_months} months)</h5>`;
+  html += `<div class="mb-2"><strong>Total Paid:</strong> ₹ ${res.total_paid}</div>`;
+  html += `<div style="max-height:350px; overflow:auto;">
+           <table class="table table-sm"><thead><tr><th>M</th><th>Paid</th><th>Remaining</th></tr></thead><tbody>`;
   for (let m of months) {
     html += `<tr><td>${m.month}</td><td>₹ ${m.paid}</td><td>₹ ${m.remaining}</td></tr>`;
   }
