@@ -4,13 +4,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
-app = FastAPI(title="Debt-Free Manager (Final Version)")
+app = FastAPI(title="Debt-Free Manager (Final Fixed)")
 
-# Mount static and template directories
+# Serve static and template folders
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-# In-memory storage
+# In-memory database
 DB = {"incomes": [], "expenses": [], "debts": []}
 
 class DebtIn(BaseModel):
@@ -19,6 +19,7 @@ class DebtIn(BaseModel):
     apr: float = Field(ge=0)
     min_payment: float = Field(gt=0)
 
+# ---------- Home ----------
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -81,7 +82,7 @@ def status():
         "debts_count": len(DB["debts"])
     }
 
-# ---------- Payment Plan ----------
+# ---------- Plan ----------
 @app.post("/api/plan")
 def plan(payload: dict):
     method = payload.get("method", "snowball")
@@ -105,6 +106,79 @@ def plan(payload: dict):
     if pool <= 0 and extra <= 0:
         return JSONResponse({"error": "No available money for debt payments."}, status_code=400)
 
+    months = []
+    total_paid = 0.0
+    month = 0
+
+    while month < months_limit:
+        month += 1
+        monthly_pool = pool + extra
+        active = [d for d in debts if d["balance"] > 0.009]
+        if not active:
+            break
+
+        # Add interest
+        for d in active:
+            d["balance"] += d["balance"] * (d["apr"] / 100 / 12)
+
+        # Pay minimums
+        min_sum = sum(d["min_payment"] for d in active)
+        factor = 1 if min_sum == 0 else min(1, monthly_pool / min_sum)
+        payments = []
+        month_paid = 0.0
+
+        for d in active:
+            pay = round(d["min_payment"] * factor, 2)
+            pay = min(pay, d["balance"])
+            d["balance"] -= pay
+            payments.append({"id": d["id"], "name": d["name"], "amount": pay})
+            monthly_pool -= pay
+            month_paid += pay
+
+        # Extra payment to target debt
+        active = sorted(
+            [d for d in debts if d["balance"] > 0.009],
+            key=(lambda x: x["balance"]) if method == "snowball" else (lambda x: -x["apr"])
+        )
+
+        while monthly_pool > 0.009 and active:
+            t = active[0]
+            pay = round(min(monthly_pool, t["balance"]), 2)
+            if pay < 0.01:
+                break
+            t["balance"] -= pay
+            payments.append({"id": t["id"], "name": t["name"], "amount": pay, "type": "extra"})
+            monthly_pool -= pay
+            month_paid += pay
+            active = sorted(
+                [d for d in debts if d["balance"] > 0.009],
+                key=(lambda x: x["balance"]) if method == "snowball" else (lambda x: -x["apr"])
+            )
+
+        remaining = round(sum(d["balance"] for d in debts), 2)
+        months.append({
+            "month": month,
+            "paid": round(month_paid, 2),
+            "remaining": remaining
+        })
+        total_paid += month_paid
+
+        if remaining <= 0.01:
+            break
+
+    return {
+        "months": months,
+        "total_months": len(months),
+        "total_paid": round(total_paid, 2)
+    }
+
+# ---------- Clear All ----------
+@app.post("/api/clear")
+def clear_all():
+    DB["incomes"].clear()
+    DB["expenses"].clear()
+    DB["debts"].clear()
+    return {"ok": True}
     months = []
     total_paid = 0.0
     month = 0
