@@ -17,9 +17,7 @@
           <div class="col-8"><input id="income_name" class="form-control" placeholder="Name (e.g., Salary)"></div>
           <div class="col-4"><input id="income_amount" type="number" class="form-control" placeholder="Amount"></div>
         </div>
-        <div class="mt-2">
-          <button class="btn btn-primary btn-sm" onclick="addIncome()">Add Income</button>
-        </div>
+        <button class="btn btn-primary btn-sm mt-2" onclick="addIncome()">Add Income</button>
       </div>
     </div>
 
@@ -30,9 +28,7 @@
           <div class="col-8"><input id="expense_name" class="form-control" placeholder="Name (e.g., Rent)"></div>
           <div class="col-4"><input id="expense_amount" type="number" class="form-control" placeholder="Amount"></div>
         </div>
-        <div class="mt-2">
-          <button class="btn btn-warning btn-sm text-white" onclick="addExpense()">Add Expense</button>
-        </div>
+        <button class="btn btn-warning btn-sm text-white mt-2" onclick="addExpense()">Add Expense</button>
       </div>
     </div>
 
@@ -45,9 +41,7 @@
           <div class="col-4"><input id="debt_apr" type="number" class="form-control" placeholder="APR (%)"></div>
           <div class="col-4"><input id="debt_min" type="number" class="form-control" placeholder="Min Payment"></div>
         </div>
-        <div class="mt-2">
-          <button class="btn btn-success btn-sm" onclick="addDebt()">Add Debt</button>
-        </div>
+        <button class="btn btn-success btn-sm mt-2" onclick="addDebt()">Add Debt</button>
       </div>
     </div>
 
@@ -62,14 +56,13 @@
     </div>
 
     <div id="status" class="mb-3"></div>
-
     <div id="debts_list" class="mb-3"></div>
-
     <div id="plan_output"></div>
 
-    <div class="mt-4 small text-muted">Note: Demo app — data stored in server memory. For persistent storage use paid DB or Deta/Firebase.</div>
+    <div class="mt-4 small text-muted">
+      Demo App — Data resets if server restarts.
+    </div>
   </div>
-
   <script src="/static/app.js"></script>
 </body>
 </html>
